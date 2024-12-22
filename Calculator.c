@@ -3,7 +3,7 @@
 
 void evaluate_expression(char *expression);
 int perform_operation(int arr_num[], int *index_num, char arr_op[], int *index_op, char operation);
-int calculate_result(int arr_num[], int index_num, char arr_op[], int index_op);
+int final_evaluation(int arr_num[], int index_num, char arr_op[], int index_op);
 
 int main()
 {
@@ -63,12 +63,12 @@ void evaluate_expression(char *expression)
         return;
     }
     perform_operation(arr_num, &index_num, arr_op, &index_op, '*');
-    int result = calculate_result(arr_num, index_num, arr_op, index_op);
+    int result = final_evaluation(arr_num, index_num, arr_op, index_op);
     printf("Result: %d\n", result);
 }
 
 
-int calculate_result(int arr_num[],int index_num,char arr_op[], int index_op)
+int final_evaluation(int arr_num[],int index_num,char arr_op[], int index_op)
 {
     int result = arr_num[0];
     int index;
