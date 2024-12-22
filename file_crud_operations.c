@@ -14,6 +14,12 @@ void add_user();
 void display_users();
 void update_user();
 void delete_user();
+void overwrite_file(const char *temp_file_name, const char *original_file_name);
+int check_duplicate_id(int id);
+void delete_temp_file(const char *filename);
+void input_user_name(User *user);
+void handle_file_operation(FILE *file, FILE *tempFile, const char *temp_file_name, int found, User *user);
+int get_valid_int_input(const char *prompt);
 
 int main() 
 {
@@ -45,8 +51,7 @@ int main()
     return 0;
 }
 
-void create_file() 
-{
+void create_file() {
     FILE *file = fopen(file_name,"a");
     if( file == NULL){
         perror("file not created");
@@ -55,8 +60,7 @@ void create_file()
     fclose(file);
 }
 
-void add_user() 
-{
+void add_user() {
     FILE *file = fopen(file_name, "a");
     if(file == NULL) {
         perror("file not opening");
@@ -71,30 +75,17 @@ void add_user()
         fclose(file);
         return;
     }
-    printf("Enter User ID: ");
-    scanf("%d", &user.id);
+    user.id = get_valid_int_input("Enter User ID: ");
+    if (check_duplicate_id(user.id)) {
+        printf("User with ID %d already exists.\n", user.id);
+        free(user.name);
+        fclose(file);
+        return;
+    }
     getchar();
     printf("Enter User Name: ");
-    char c;
-    while (scanf("%c", &c) == 1 && c != '\n') 
-	{
-        if (length + 1 >= capacity) 
-        {
-            capacity *= 2;
-            char *new_name = (char *)realloc(user.name, capacity * sizeof(char));
-            if (new_name == NULL) {
-                printf("No Memory Allocated.\n");
-                fclose(file);
-                free(user.name);
-                return;
-            }
-            user.name = new_name;
-        }
-        user.name[length++] = c;
-    }
-    user.name[length] = '\0';
-    printf("Enter User Age: ");
-    scanf("%d", &user.age);
+    input_user_name(&user);
+    user.age = get_valid_int_input("Enter User Age: ");
 
     fprintf(file,"%-5d %-20s %-3d\n", user.id, user.name, user.age);
     free(user.name);
@@ -102,8 +93,7 @@ void add_user()
     printf("User added in file.\n");
 }
 
-void display_users() 
-{
+void display_users() {
     FILE *file = fopen(file_name, "r");
     if(file == NULL) {
         perror("file not opening");
@@ -119,7 +109,7 @@ void display_users()
     printf("\nList of Users:\n");
     printf("\n%-5s %-20s %-3s\n", "ID", "Name", "Age");
     printf("--------------------------------\n");
-    while(fscanf(file, "%d %49s %d\n", &user.id, user.name, &user.age)==3) 
+    while(fscanf(file, "%d %49[^0-9] %d\n", &user.id, user.name, &user.age)==3) 
 	{
         printf("%-5d %-20s %-3d\n", user.id, user.name, user.age);
     }
@@ -127,8 +117,7 @@ void display_users()
     fclose(file);
 }
 
-void update_user() 
-{
+void update_user() {
     FILE *file = fopen(file_name,"r");
     if(file == NULL) {
         perror("file not opening");
@@ -144,11 +133,10 @@ void update_user()
         return;
     }
 
-    printf("Enter User ID to update: ");
-    scanf("%d", &id);
+    id = get_valid_int_input("Enter User ID to update: ");
     getchar();
 
-    while(fscanf(file,"%d %49s %d\n", &user.id, user.name, &user.age)==3)  
+    while(fscanf(file,"%d %49[^0-9] %d\n", &user.id, user.name, &user.age)==3)  
 	{
         if(user.id==id) {
             found=1;
@@ -161,49 +149,18 @@ void update_user()
                 fclose(tempFile);
                 return;
             }
-            char c;
-            while (scanf("%c", &c) == 1 && c != '\n') 
-			{
-                if (length + 1 >= capacity) 
-				{
-                    capacity *= 2;
-                    char *new_name = (char *)realloc(user.name, capacity * sizeof(char));
-                    if (new_name == NULL) {
-                        printf("No Memory Allocated.\n");
-                        free(user.name);
-                        fclose(file);
-                        fclose(tempFile);
-                        return;
-                    }
-                    user.name = new_name;
-                }
-                user.name[length++] = c;
-            }
-            user.name[length] = '\0';
-            printf("Enter new User Age: ");
-            scanf("%d", &user.age);
+            input_user_name(&user);
+            user.age = get_valid_int_input("Enter new User Age: ");
             getchar();
         }
         fprintf(tempFile,"%-5d %-20s %-3d\n", user.id, user.name, user.age);
     }
     fclose(file);
     fclose(tempFile);
-
-    if(found) {
-        remove(file_name);
-        rename("temp.txt", file_name);
-        printf("User updated.\n");
-    } else {
-        remove("temp.txt");
-        printf("User not found.\n");
-    }
-    if (user.name) {
-        free(user.name);
-    }
+    handle_file_operation(file, tempFile, "temp.txt", found, &user);
 }
 
-void delete_user() 
-{
+void delete_user() {
     FILE *file = fopen(file_name, "r");
     if(file == NULL) {
         perror("file not opening");
@@ -223,11 +180,8 @@ void delete_user()
         fclose(file);
         return;
     }
-
-    printf("Enter User ID to delete: ");
-    scanf("%d", &id);
-
-    while(fscanf(file,"%d %49s %d\n", &user.id, user.name, &user.age)==3) 
+    id = get_valid_int_input("Enter User ID to delete: ");
+    while(fscanf(file,"%d %49[^0-9] %d\n", &user.id, user.name, &user.age)==3) 
 	{
         if(user.id!=id) {
             fprintf(tempFile,"%-5d %-20s %-3d\n", user.id, user.name, user.age);
@@ -235,16 +189,109 @@ void delete_user()
             found=1;
         }
     }
-
     fclose(file);
     fclose(tempFile);
-    if(found) {
-        remove(file_name);
-        rename("temp.txt",file_name);
-        printf("User deleted.\n");
-    } else {
-        remove("temp.txt");
-        printf("User not found.\n");
+    handle_file_operation(file, tempFile, "temp.txt", found, &user);
+}
+
+void overwrite_file(const char *temp_file_name, const char *original_file_name) {
+    FILE *temp = fopen(temp_file_name, "r");
+    FILE *original = fopen(original_file_name, "w");
+    if (temp == NULL || original == NULL) {
+        perror("Error in overwriting file");
+        if (temp) fclose(temp);
+        if (original) fclose(original);
+        return;
+    }
+    char ch;
+    while ((ch = fgetc(temp)) != EOF) {
+        fputc(ch, original);
+    }
+    fclose(temp);
+    fclose(original);
+    delete_temp_file(temp_file_name);
+}
+
+int check_duplicate_id(int id) {
+    FILE *file = fopen(file_name, "r");
+    if (file == NULL) {
+        perror("File not opening");
+        return 0;
+    }
+    User user;
+    user.name = (char *)malloc(50 * sizeof(char));
+    if (user.name == NULL) {
+        printf("No memory allocated.\n");
+        fclose(file);
+        return 0;
+    }
+    while (fscanf(file, "%d %49[^0-9] %d\n", &user.id, user.name, &user.age) == 3) {
+        if (user.id == id) {
+            free(user.name);
+            fclose(file);
+            return 1;
+        }
     }
     free(user.name);
+    fclose(file);
+    return 0;
+}
+
+void delete_temp_file(const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file != NULL) {
+        fclose(file);
+        if (unlink(filename) != 0) {
+            perror("Error deleting temporary file");
+        }
+    }
+}
+
+void input_user_name(User *user) {
+    int capacity = 10, length = 0;
+    char c;
+    while (1) {
+        c = getchar();
+        if (c == '\n' || c == EOF) {
+            break;
+        }
+        if (length + 1 >= capacity) {
+            capacity *= 2;
+            char *new_name = (char *)realloc(user->name, capacity * sizeof(char));
+            if (new_name == NULL) {
+                printf("No Memory Allocated.\n");
+                free(user->name);
+                return;
+            }
+            user->name = new_name;
+        }
+        user->name[length++] = c;
+    }
+    user->name[length] = '\0';
+}
+
+void handle_file_operation(FILE *file, FILE *tempFile, const char *temp_file_name, int found, User *user) {
+    if(found) {
+        overwrite_file(temp_file_name, file_name);
+        printf("Operation completed successfully.\n");
+    } else {
+        delete_temp_file(temp_file_name);
+        printf("User not found.\n");
+    }
+    free(user->name);
+}
+
+int get_valid_int_input(const char *prompt) {
+    int num;
+    int valid_input = 0;
+    while (!valid_input) {
+        printf("%s", prompt);
+        if (scanf("%d", &num) == 1) {
+            valid_input = 1;
+        } else {
+            printf("Invalid input. Please enter a valid integer.\n");
+            while (getchar() != '\n');
+        }
+    }
+    return num;
 }
