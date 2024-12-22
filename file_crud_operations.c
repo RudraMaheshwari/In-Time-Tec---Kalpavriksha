@@ -35,17 +35,12 @@ int main()
         printf("Enter your choice: ");
         scanf("%d", &choice);
         switch(choice) {
-            case 1:	add_user();
-               		break;
-            case 2: display_users();
-                    break;
-            case 3: update_user();
-    				break;
-            case 4: delete_user();
-					break;
+            case 1: add_user(); break;
+            case 2: display_users(); break;
+            case 3: update_user(); break;
+            case 4: delete_user(); break;
             case 5: exit(0);
-            default:
-                printf("Enter valid choice.\n");
+            default: printf("Enter valid choice.\n");
         }
     }
     return 0;
