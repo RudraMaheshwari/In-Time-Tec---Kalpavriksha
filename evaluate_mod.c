@@ -18,21 +18,21 @@ long long calculate_mod(long long Base, long long Exponent, long long Modulus){
 
 void validate_base(long long Base) {
     if (Base < 0) {
-        printf("Error: Base (B) must be a positive integer.");
+        printf("Error: Base must be a positive integer.");
         exit(1);
     }
 }
 
 void validate_exponent(long long Exponent) {
     if (Exponent < 0) {
-        printf("Error: Exponent (N) cannot be negative.");
+        printf("Error: Exponent cannot be negative.");
         exit(1);
     }
 }
 
 void validate_modulus(long long Modulus) {
     if (Modulus <= 1) {
-        printf("Error: Modulus (M) must be greater than 1.");
+        printf("Error: Modulus must be greater than 1.");
         exit(1);
     }
 }
@@ -40,7 +40,6 @@ void validate_modulus(long long Modulus) {
 void validate_input(int result, const char *warning) {
     if (result != 1) {
         printf("%s\n", warning);
-        exit(1);
     }
 }
 
