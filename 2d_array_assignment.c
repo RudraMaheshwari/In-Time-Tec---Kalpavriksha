@@ -3,16 +3,9 @@
 #define maximum_columns 101
 #define maximum_name_length 50
 
-char change_case(char character) {
-    if (character >= 'A' && character <= 'Z') {
-        return character + ('a' - 'A');
-    }
-    return character;
-}
-
 int starts_with_vowel(char name[]) {
-    char first_character = change_case(name[0]);
-    return (first_character == 'a' || first_character == 'e' || first_character == 'i' || first_character == 'o' || first_character == 'u');
+     char first_character = name[0];
+    return (first_character == 'a' || first_character == 'e' || first_character == 'i' || first_character == 'o' || first_character == 'u' || first_character == 'A' || first_character == 'E' || first_character == 'I' || first_character == 'O' || first_character == 'U');
 }
 
 int string_length(char string[]) {
