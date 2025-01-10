@@ -1,7 +1,7 @@
 #include <stdio.h>
-#define maximum_rows 10
-#define maximum_columns 101
-#define maximum_name_length 50
+#define MAXIMUM_ROWS 10
+#define MAXIMUM_COLUMNS 101
+#define MAXIMUM_STRING_LENGTH 50
 
 int starts_with_vowel(char name[]) {
      char first_character = name[0];
@@ -25,7 +25,7 @@ void string_copy(char destination[], char source[]) {
     destination[index] = '\0';
 }
 
-void find_longest_name(char names[maximum_rows][maximum_columns][maximum_name_length], int rows, int columns, char longest_name[]) {
+void find_longest_name(char names[MAXIMUM_ROWS][MAXIMUM_COLUMNS][MAXIMUM_STRING_LENGTH + 1], int rows, int columns, char longest_name[]) {
     int maximum_length = 0, row_index, column_index, length;
     for (row_index = 0; row_index < rows; row_index++) {
         for (column_index = 0; column_index < columns; column_index++) {
@@ -56,13 +56,20 @@ int main() {
 	rows = validate_integer("Enter number of rows: ", 1, 10);
     columns = validate_integer("Enter number of columns: ", 1, 101);
 
-    char names[maximum_rows][maximum_columns][maximum_name_length];
+    char names[MAXIMUM_ROWS][MAXIMUM_COLUMNS][MAXIMUM_STRING_LENGTH + 1];
 
     printf("Enter the names:\n");
     for (row_index = 0; row_index < rows; row_index++) {
         for (column_index = 0; column_index < columns; column_index++) {
-            printf("Name at (%d,%d): ", row_index, column_index);
-            scanf("%s", names[row_index][column_index]);
+            while(1){
+                printf("Name at (%d,%d): ", row_index, column_index);
+                scanf("%s", names[row_index][column_index]);
+                if(string_length (names[row_index][column_index]) < MAXIMUM_STRING_LENGTH){
+                    break;
+                } else{
+                    printf("Name is too long. Please enter a name with 50 characters.\n");
+                }
+            }
         }
     }
 
@@ -84,7 +91,7 @@ int main() {
     }
     printf("\nNumber of names starting with a vowel: %d\n", count_vowels);
 
-    char longest_name[maximum_name_length];
+    char longest_name[MAXIMUM_STRING_LENGTH + 1];
     find_longest_name(names, rows, columns, longest_name);
     printf("The longest name: %s\n", longest_name);
 
