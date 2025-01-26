@@ -74,6 +74,7 @@ int main(){
     }
     printf("\nEnter target sum:\n");
     scanf("%d",&target);
+    printf("Subsets are:\n");
     create_subsets(integer_array,array_size,target);
     free(integer_array);
     return 0;
