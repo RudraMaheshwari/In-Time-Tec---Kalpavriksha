@@ -15,94 +15,110 @@ Node *create_node(int value){
 
 void display(Node *head){
     Node *temp = head;
-    if(temp != NULL){
-        do{
-            printf("%d ", temp->data);
-            temp = temp->next;
-        } while(temp != head);
+    while(temp != NULL){
+        printf("%d ",temp->data);
+        temp = temp->next;
     }
     printf("\n");
 }
 
 Node *parse_input(char *input_string){
-    Node *head = NULL, *temp = NULL;
-    int index = 0;
+    Node *head=NULL;
+    Node *temp = NULL;
+    int index=0;
     while(input_string[index] != '\0'){
-        if((input_string[index] >= '0' && input_string[index] <= '9') || input_string[index] == '-'){
-            int number = 0, is_negative = 1;
+        if((input_string[index]>='0' && input_string[index] <='9') || input_string[index] == '-'){
+            int number =0,is_negative =1;
             if(input_string[index] == '-'){
                 is_negative = -1;
                 index++;
             }
-            while(input_string[index] >= '0' && input_string[index] <= '9'){
-                number = number * 10 + (input_string[index] - '0');
+            while(input_string[index]>='0' && input_string[index] <='9'){
+                number = number *10 + (input_string[index]-'0');
                 index++;
             }
-            Node *new_node = create_node(number * is_negative);
+            Node* new_node=create_node(number * is_negative);
             if(head == NULL){
-                head = temp = new_node;
-            } else{
+                head = temp=new_node;
+            }else{
                 temp->next = new_node;
-                temp = temp->next;
+                temp= temp->next;
             }
-        } else{
+        }
+        else{
             index++;
         }
-    }
-    if(temp != NULL){
-        temp->next = head; 
     }
     return head;
 }
 
-void to_array(Node *head, int **array, int *size){
-    Node *temp = head;
-    *size = 0;
-    if(head != NULL){
-        do{
-            (*size)++;
+Node *merge(Node *left, Node *right){
+    if(left == NULL){
+        return right;
+    }
+    if(right == NULL){
+        return left;
+    }
+    Node *answer = create_node(-1);
+    Node *temp = answer;
+    while(left != NULL && right != NULL){
+        if(left->data < right->data){
+            temp->next = left;
+            left = left->next;
             temp = temp->next;
-        }while(temp != head);
+        } else{
+            temp->next = right;
+            right = right->next;
+            temp = temp->next;
+        }
     }
-    
-    *array = (int *)malloc(*size * sizeof(int));
-    
-    temp = head;
-    for(int i = 0; i < *size; i++){
-        (*array)[i] = temp->data;
+    if(left!= NULL){
+        temp->next = left;
+    }
+    if(right != NULL){
+        temp->next = right;
+    }
+    answer = answer->next;
+    return answer;
+}
+
+Node *find_mid(Node *head)
+{
+    Node *slow = head;
+    Node *fast = head;
+    Node *previous =NULL;
+    do
+    {
+        previous = slow;
+        slow = slow->next;
+        fast = fast->next->next;
+    } while (fast && fast->next);
+    previous->next = NULL;
+    return slow;
+}
+
+Node *merge_sort(Node *head){
+    if(head == NULL || head->next == NULL){
+        return head;
+    }
+    Node *mid = find_mid(head);
+    Node* left = merge_sort(head);
+    Node* right = merge_sort(mid);
+    Node *result = merge(left,right);
+    return result;
+}
+
+int find_target(Node *head, int target_value){
+    int index = 1;
+    Node *temp = head;
+    while(temp != NULL){
+        if(temp->data == target_value){
+            return index;  
+        }
         temp = temp->next;
+        index++;
     }
-}
-
-int find_index(int *arr, int size, int target){
-    for(int i = 0; i < size; i++){
-        if(arr[i] == target){
-            return i;
-        }
-    }
-    return -1;
-}
-
-void sort_array(int *arr, int size){
-    for (int i = 0; i < size - 1; i++){
-        for (int j = i + 1; j < size; j++){
-            if(arr[i] > arr[j]){
-                int temp = arr[i];
-                arr[i] = arr[j];
-                arr[j] = temp;
-            }
-        }
-    }
-}
-
-int find_target_index(Node *head, int target) {
-    int *arr = NULL;
-    int size = 0;
-    to_array(head, &arr, &size);
-    sort_array(arr, size);
-    int index = find_index(arr, size, target);
-    free(arr);
-    return index;
+    return -1; 
 }
 
 int main(){
@@ -110,15 +126,16 @@ int main(){
     if(!input_list){
         return 1;
     }
-    scanf("%[^\n]s", input_list);
+    scanf("%[^\n]s",input_list);
     getchar();
-    
+    Node * linked_list = parse_input(input_list);
+    Node *linked_list2 = merge_sort(linked_list);
+    display(linked_list2);
     int target;
     scanf("%d", &target);
-    Node *linked_list = parse_input(input_list);
-    int index = find_target_index(linked_list, target);
-    printf("%d\n", index);
+    getchar();
+    int find_index = find_target(linked_list2, target);
+    printf("The index of target value %d is: %d\n", target, find_index);
     free(input_list);
-    
     return 0;
 }
